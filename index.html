@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#F2F2F7">
+  <title>Cute QR</title>
+  <script src="https://unpkg.com/qr-code-styling@1.6.0-rc.1/lib/qr-code-styling.js"></script>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --color-bg:           #F2F2F7;
+      --color-surface:      rgba(255,255,255,0.62);
+      --color-surface-hi:   rgba(255,255,255,0.82);
+      --color-border:       rgba(255,255,255,0.75);
+      --color-text-primary: #1C1C1E;
+      --color-text-secondary:#8E8E93;
+      --color-input-bg:     rgba(255,255,255,0.70);
+      --color-input-border: rgba(0,0,0,0.10);
+      --color-qr-bg:        #FFFFFF;
+      --color-btn-primary-bg:    #1C1C1E;
+      --color-btn-primary-text:  #FFFFFF;
+      --color-btn-primary-hover: #3A3A3C;
+      --color-divider:      rgba(0,0,0,0.07);
+
+      --space-xs:  8px;
+      --space-sm:  12px;
+      --space-md:  20px;
+      --space-lg:  32px;
+      --space-xl:  48px;
+
+      --radius-sm:   12px;
+      --radius-md:   20px;
+      --radius-lg:   28px;
+      --radius-xl:   36px;
+      --radius-pill: 999px;
+
+      --spring-bouncy: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --spring-snappy: cubic-bezier(0.22, 1, 0.36, 1);
+      --dur-fast:   180ms;
+      --dur-normal: 320ms;
+      --dur-slow:   500ms;
+
+      --glass-blur:    blur(24px) saturate(180%);
+      --glass-shadow:  0 8px 32px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,0.9) inset;
+      --glass-shadow-lg: 0 20px 60px rgba(0,0,0,0.10), 0 1px 0 rgba(255,255,255,0.9) inset;
+    }
+
+    [data-theme="dark"] {
+      --color-bg:            #1C1C1E;
+      --color-surface:       rgba(44,44,46,0.72);
+      --color-surface-hi:    rgba(58,58,60,0.80);
+      --color-border:        rgba(255,255,255,0.12);
+      --color-text-primary:  #F2F2F7;
+      --color-text-secondary:#8E8E93;
+      --color-input-bg:      rgba(58,58,60,0.70);
+      --color-input-border:  rgba(255,255,255,0.10);
+      --color-qr-bg:         #000000;
+      --color-btn-primary-bg:    #F2F2F7;
+      --color-btn-primary-text:  #1C1C1E;
+      --color-btn-primary-hover: #FFFFFF;
+      --color-divider:       rgba(255,255,255,0.08);
+      --glass-shadow:        0 8px 32px rgba(0,0,0,0.32), 0 1px 0 rgba(255,255,255,0.06) inset;
+      --glass-shadow-lg:     0 20px 60px rgba(0,0,0,0.40), 0 1px 0 rgba(255,255,255,0.06) inset;
+    }
+
+    html {
+      height: 100%;
+    }
+
+    body {
+      min-height: 100dvh;
+      background-color: var(--color-bg);
+      background-image:
+        radial-gradient(ellipse 90% 55% at 50% 0%, rgba(255,255,255,0.72) 0%, transparent 70%),
+        radial-gradient(ellipse 70% 40% at 50% 105%, rgba(0,0,0,0.04) 0%, transparent 70%);
+      font-family: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      color: var(--color-text-primary);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      transition: background-color var(--dur-normal) ease, color var(--dur-normal) ease;
+    }
+
+    [data-theme="dark"] body {
+      background-image:
+        radial-gradient(ellipse 90% 55% at 50% 0%, rgba(255,255,255,0.04) 0%, transparent 70%),
+        radial-gradient(ellipse 70% 40% at 50% 105%, rgba(0,0,0,0.30) 0%, transparent 70%);
+    }
+
+    /* ─── Theme toggle ─── */
+
+    .btn-theme {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      transition:
+        transform    var(--dur-fast) var(--spring-bouncy),
+        color        var(--dur-fast) ease,
+        background   var(--dur-normal) ease,
+        border-color var(--dur-normal) ease,
+        box-shadow   var(--dur-fast) ease;
+    }
+
+    .btn-theme:hover {
+      transform: scale(1.12);
+      color: var(--color-text-primary);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+
+    .btn-theme:active {
+      transform: scale(0.94);
+    }
+
+    /* ─── Layout ─── */
+
+    .app {
+      display: grid;
+      place-items: center;
+      min-height: 100dvh;
+      padding: var(--space-md);
+    }
+
+    .screens {
+      display: grid;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .screen {
+      grid-area: 1 / 1;
+      width: 100%;
+      transition:
+        opacity   var(--dur-slow) var(--spring-snappy),
+        transform var(--dur-slow) var(--spring-snappy);
+      will-change: opacity, transform;
+    }
+
+    /* ─── Glass card ─── */
+
+    .glass-card {
+      position: relative;
+      background: var(--color-surface);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--glass-shadow-lg);
+      padding: var(--space-xl) var(--space-lg);
+      isolation: isolate;
+      transition:
+        background   var(--dur-normal) ease,
+        border-color var(--dur-normal) ease,
+        box-shadow   var(--dur-normal) ease;
+    }
+
+    /* ─── Screen 1: Input ─── */
+
+    #screen-input {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+
+    #screen-input.is-exiting {
+      opacity: 0;
+      transform: scale(0.94) translateY(-14px);
+      pointer-events: none;
+    }
+
+    .app-header {
+      text-align: center;
+      margin-bottom: var(--space-lg);
+    }
+
+    .app-title {
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--color-text-primary);
+      line-height: 1;
+      margin-bottom: var(--space-xs);
+    }
+
+    .app-subtitle {
+      font-size: 15px;
+      color: var(--color-text-secondary);
+      font-weight: 400;
+      letter-spacing: -0.01em;
+    }
+
+    .input-wrap {
+      position: relative;
+      margin-bottom: var(--space-sm);
+    }
+
+    .url-input {
+      width: 100%;
+      padding: 14px 50px 14px 16px;
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--color-input-border);
+      background: var(--color-input-bg);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      font: inherit;
+      font-size: 16px;
+      color: var(--color-text-primary);
+      outline: none;
+      transition:
+        border-color var(--dur-fast) ease,
+        box-shadow   var(--dur-fast) ease,
+        background   var(--dur-fast) ease,
+        color        var(--dur-normal) ease;
+    }
+
+    .url-input::placeholder {
+      color: var(--color-text-secondary);
+    }
+
+    .url-input:focus {
+      border-color: rgba(128,128,128,0.40);
+      background: var(--color-input-bg);
+      box-shadow: 0 0 0 4px rgba(128,128,128,0.10);
+    }
+
+    .btn-paste {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 34px;
+      height: 34px;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: transparent;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition:
+        color      var(--dur-fast) ease,
+        background var(--dur-fast) ease,
+        transform  var(--dur-fast) var(--spring-bouncy);
+    }
+
+    .btn-paste:hover {
+      color: var(--color-text-primary);
+      background: rgba(128,128,128,0.10);
+      transform: translateY(-50%) scale(1.10);
+    }
+
+    .btn-paste:active {
+      transform: translateY(-50%) scale(0.94);
+    }
+
+    .btn-generate {
+      width: 100%;
+      padding: 15px;
+      border-radius: var(--radius-pill);
+      border: none;
+      background: var(--color-btn-primary-bg);
+      color: var(--color-btn-primary-text);
+      font: inherit;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      margin-top: var(--space-md);
+      transition:
+        background  var(--dur-fast) ease,
+        color       var(--dur-fast) ease,
+        opacity     var(--dur-fast) ease,
+        transform   var(--dur-fast) var(--spring-bouncy),
+        box-shadow  var(--dur-fast) ease;
+    }
+
+    .btn-generate:disabled {
+      opacity: 0.26;
+      cursor: not-allowed;
+    }
+
+    .btn-generate:not(:disabled):hover {
+      background: var(--color-btn-primary-hover);
+      transform: scale(1.02);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.22);
+    }
+
+    .btn-generate:not(:disabled):active {
+      transform: scale(0.97);
+      box-shadow: none;
+    }
+
+    /* ─── Screen 2: Result ─── */
+
+    #screen-result {
+      opacity: 0;
+      transform: scale(0.96) translateY(18px);
+      pointer-events: none;
+    }
+
+    #screen-result.is-visible {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      pointer-events: auto;
+    }
+
+    /* QR container */
+
+    .qr-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: var(--space-md);
+    }
+
+    .qr-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 260px;
+      height: 260px;
+      border-radius: var(--radius-lg);
+      background: var(--color-qr-bg);
+      box-shadow:
+        0 4px 24px rgba(0,0,0,0.08),
+        0 1px 2px rgba(0,0,0,0.04),
+        0 0 0 1px rgba(128,128,128,0.08);
+      transition:
+        opacity    var(--dur-normal) var(--spring-bouncy),
+        transform  var(--dur-normal) var(--spring-bouncy),
+        background var(--dur-normal) ease;
+      overflow: hidden;
+    }
+
+    .qr-container.is-rendering {
+      opacity: 0;
+      transform: scale(0.86);
+    }
+
+    .qr-container.is-ready {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* Style picker */
+
+    .style-section {
+      margin-bottom: var(--space-md);
+    }
+
+    .style-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--color-text-secondary);
+      text-align: center;
+      margin-bottom: var(--space-sm);
+    }
+
+    .style-picker {
+      display: flex;
+      gap: var(--space-sm);
+      justify-content: center;
+    }
+
+    .style-btn {
+      flex: 0 0 72px;
+      height: 80px;
+      border-radius: var(--radius-md);
+      border: 1.5px solid transparent;
+      background: var(--color-surface-hi);
+      backdrop-filter: blur(12px) saturate(150%);
+      -webkit-backdrop-filter: blur(12px) saturate(150%);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      font: inherit;
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+      letter-spacing: 0.02em;
+      transition:
+        border-color var(--dur-fast) ease,
+        background   var(--dur-fast) ease,
+        color        var(--dur-fast) ease,
+        transform    var(--dur-fast) var(--spring-bouncy),
+        box-shadow   var(--dur-fast) ease;
+    }
+
+    .style-btn:hover {
+      transform: scale(1.07) translateY(-1px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.10);
+    }
+
+    .style-btn:active {
+      transform: scale(0.96);
+    }
+
+    .style-btn.is-active {
+      border-color: var(--color-text-primary);
+      color: var(--color-text-primary);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.10);
+    }
+
+    .style-btn svg {
+      display: block;
+    }
+
+    /* Actions */
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+
+    .btn-download {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-xs);
+      width: 100%;
+      padding: 15px;
+      border-radius: var(--radius-pill);
+      border: none;
+      background: var(--color-btn-primary-bg);
+      color: var(--color-btn-primary-text);
+      font: inherit;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      transition:
+        background var(--dur-fast) ease,
+        color      var(--dur-fast) ease,
+        transform  var(--dur-fast) var(--spring-bouncy),
+        box-shadow var(--dur-fast) ease;
+    }
+
+    .btn-download:hover {
+      background: var(--color-btn-primary-hover);
+      transform: scale(1.02);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.22);
+    }
+
+    .btn-download:active {
+      transform: scale(0.97);
+      box-shadow: none;
+    }
+
+    .btn-reset {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: transparent;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-pill);
+      transition:
+        color     var(--dur-fast) ease,
+        transform var(--dur-fast) var(--spring-bouncy);
+      z-index: 2;
+    }
+
+    .btn-reset:hover {
+      color: var(--color-text-primary);
+      transform: scale(1.18);
+    }
+
+    .btn-reset:active {
+      transform: scale(0.90);
+    }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: var(--color-divider);
+      margin: var(--space-md) 0;
+      border: none;
+      transition: background var(--dur-normal) ease;
+    }
+
+    /* Responsive */
+    @media (max-width: 460px) {
+      .glass-card {
+        padding: var(--space-lg) var(--space-md);
+      }
+      .style-btn {
+        flex: 0 0 64px;
+        height: 72px;
+      }
+      .qr-container {
+        width: 240px;
+        height: 240px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Theme toggle (always visible) -->
+  <button class="btn-theme" id="btn-theme" type="button" aria-label="Toggle dark mode"></button>
+
+  <div class="app">
+    <div class="screens">
+
+      <!-- Screen 1: Input -->
+      <section class="screen" id="screen-input">
+        <div class="glass-card">
+          <header class="app-header">
+            <h1 class="app-title">✨ Cute QR ✨</h1>
+            <p class="app-subtitle">Turn any link into a QR code</p>
+          </header>
+
+          <div class="input-wrap">
+            <input
+              type="url"
+              id="url-input"
+              class="url-input"
+              placeholder="Paste a link…"
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="off"
+              spellcheck="false"
+            >
+            <button class="btn-paste" id="btn-paste" type="button" aria-label="Paste from clipboard">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                <rect x="5" y="1.5" width="8" height="3" rx="1.5" fill="currentColor" opacity="0.5"/>
+                <rect x="3" y="3" width="12" height="14" rx="2.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                <rect x="5" y="2" width="8" height="2.5" rx="1" fill="currentColor" opacity="0.5"/>
+              </svg>
+            </button>
+          </div>
+
+          <button class="btn-generate" id="btn-generate" type="button" disabled>
+            Generate
+          </button>
+        </div>
+      </section>
+
+      <!-- Screen 2: Result -->
+      <section class="screen" id="screen-result" hidden>
+        <div class="glass-card">
+          <button class="btn-reset" id="btn-reset" type="button" aria-label="Start over">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M2.5 5.5A5.5 5.5 0 1 1 2 8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M2.5 2v4h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="qr-wrap">
+            <div class="qr-container is-rendering" id="qr-container"></div>
+          </div>
+
+          <hr class="divider">
+
+          <div class="style-section">
+            <p class="style-label">Style</p>
+            <div class="style-picker" id="style-picker" role="group" aria-label="QR code style"></div>
+          </div>
+
+          <hr class="divider">
+
+          <div class="actions">
+            <button class="btn-download" id="btn-download" type="button">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M8 1v9M4.5 7L8 10.5 11.5 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 12.5h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              Download PNG
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <script>
+    // ── Icons ─────────────────────────────────────────────────────────────────
+
+    const ICON_MOON = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <path d="M15.5 10.5A7 7 0 1 1 7.5 2.5a5 5 0 0 0 8 8z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+    </svg>`;
+
+    const ICON_SUN = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <circle cx="9" cy="9" r="3.5" stroke="currentColor" stroke-width="1.5"/>
+      <path d="M9 1v2M9 15v2M1 9h2M15 9h2M3.22 3.22l1.41 1.41M13.36 13.36l1.42 1.42M3.22 14.78l1.41-1.41M13.36 4.64l1.42-1.42" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>`;
+
+    // ── Config ────────────────────────────────────────────────────────────────
+
+    const STYLES = [
+      {
+        id: 'classic',
+        label: 'Classic',
+        icon: `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <rect x="2"  y="2"  width="12" height="12" fill="currentColor"/>
+          <rect x="18" y="2"  width="12" height="12" fill="currentColor"/>
+          <rect x="2"  y="18" width="12" height="12" fill="currentColor"/>
+          <rect x="18" y="18" width="12" height="12" fill="currentColor"/>
+        </svg>`,
+        dotType:    'square',
+        cornerType: 'square',
+        dotCorner:  'square',
+      },
+      {
+        id: 'rounded',
+        label: 'Rounded',
+        icon: `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <rect x="2"  y="2"  width="12" height="12" rx="3" fill="currentColor"/>
+          <rect x="18" y="2"  width="12" height="12" rx="3" fill="currentColor"/>
+          <rect x="2"  y="18" width="12" height="12" rx="3" fill="currentColor"/>
+          <rect x="18" y="18" width="12" height="12" rx="3" fill="currentColor"/>
+        </svg>`,
+        dotType:    'rounded',
+        cornerType: 'extra-rounded',
+        dotCorner:  'dot',
+      },
+      {
+        id: 'dots',
+        label: 'Dots',
+        icon: `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <circle cx="8"  cy="8"  r="6" fill="currentColor"/>
+          <circle cx="24" cy="8"  r="6" fill="currentColor"/>
+          <circle cx="8"  cy="24" r="6" fill="currentColor"/>
+          <circle cx="24" cy="24" r="6" fill="currentColor"/>
+        </svg>`,
+        dotType:    'dots',
+        cornerType: 'dot',
+        dotCorner:  'dot',
+      },
+      {
+        id: 'classy',
+        label: 'Classy',
+        icon: `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <rect x="2"  y="8"  width="8" height="8" rx="1.5" transform="rotate(-45 8  8 )" fill="currentColor"/>
+          <rect x="18" y="8"  width="8" height="8" rx="1.5" transform="rotate(-45 24 8 )" fill="currentColor"/>
+          <rect x="2"  y="24" width="8" height="8" rx="1.5" transform="rotate(-45 8  24)" fill="currentColor"/>
+          <rect x="18" y="24" width="8" height="8" rx="1.5" transform="rotate(-45 24 24)" fill="currentColor"/>
+        </svg>`,
+        dotType:    'classy-rounded',
+        cornerType: 'extra-rounded',
+        dotCorner:  'square',
+      },
+    ];
+
+    const QR_BASE = {
+      width: 240,
+      height: 240,
+      margin: 10,
+      qrOptions: { errorCorrectionLevel: 'M' },
+    };
+
+    // ── State ─────────────────────────────────────────────────────────────────
+
+    let qrCode         = null;
+    let currentStyleId = 'rounded';
+    let currentUrl     = '';
+    let currentTheme   = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+
+    // ── DOM refs ──────────────────────────────────────────────────────────────
+
+    const screenInput   = document.getElementById('screen-input');
+    const screenResult  = document.getElementById('screen-result');
+    const urlInput      = document.getElementById('url-input');
+    const btnPaste      = document.getElementById('btn-paste');
+    const btnGenerate   = document.getElementById('btn-generate');
+    const qrContainer   = document.getElementById('qr-container');
+    const stylePicker   = document.getElementById('style-picker');
+    const btnDownload   = document.getElementById('btn-download');
+    const btnReset      = document.getElementById('btn-reset');
+    const btnTheme      = document.getElementById('btn-theme');
+
+    // ── Theme helpers ─────────────────────────────────────────────────────────
+
+    function getThemeColors() {
+      return currentTheme === 'dark'
+        ? { dots: '#FFFFFF', bg: '#000000' }
+        : { dots: '#000000', bg: '#FFFFFF' };
+    }
+
+    function buildQROpts(styleId, forDownload = false) {
+      const { dots, bg } = getThemeColors();
+      const style = STYLES.find(s => s.id === styleId) ?? STYLES[0];
+      return {
+        ...QR_BASE,
+        backgroundOptions:    { color: forDownload ? 'transparent' : bg },
+        dotsOptions:          { type: style.dotType,    color: dots },
+        cornersSquareOptions: { type: style.cornerType, color: dots },
+        cornersDotOptions:    { type: style.dotCorner,  color: dots },
+      };
+    }
+
+    function updateThemeIcon() {
+      btnTheme.innerHTML = currentTheme === 'dark' ? ICON_SUN : ICON_MOON;
+      btnTheme.setAttribute('aria-label', currentTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+    }
+
+    function applyTheme() {
+      document.documentElement.dataset.theme = currentTheme;
+      updateThemeIcon();
+    }
+
+    function toggleTheme() {
+      currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+      applyTheme();
+
+      if (qrCode && currentUrl) {
+        qrContainer.classList.remove('is-ready');
+        qrContainer.classList.add('is-rendering');
+        qrCode.update(buildQROpts(currentStyleId));
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          qrContainer.classList.remove('is-rendering');
+          qrContainer.classList.add('is-ready');
+        }));
+      }
+    }
+
+    // Set initial theme
+    applyTheme();
+    btnTheme.addEventListener('click', toggleTheme);
+
+    // ── Build style picker ────────────────────────────────────────────────────
+
+    STYLES.forEach(style => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'style-btn' + (style.id === currentStyleId ? ' is-active' : '');
+      btn.dataset.styleId = style.id;
+      btn.setAttribute('aria-label', style.label + ' style');
+      btn.innerHTML = style.icon + `<span>${style.label}</span>`;
+      btn.addEventListener('click', () => switchStyle(style.id));
+      stylePicker.appendChild(btn);
+    });
+
+    // ── Validation ────────────────────────────────────────────────────────────
+
+    function validateInput() {
+      const val = urlInput.value.trim();
+      const looks = val.length > 3 && (val.includes('.') || val.startsWith('http'));
+      btnGenerate.disabled = !looks;
+    }
+
+    urlInput.addEventListener('input', validateInput);
+
+    urlInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !btnGenerate.disabled) generateQR();
+    });
+
+    // ── Paste ─────────────────────────────────────────────────────────────────
+
+    btnPaste.addEventListener('click', async () => {
+      try {
+        const text = await navigator.clipboard.readText();
+        if (text) {
+          urlInput.value = text;
+          validateInput();
+          urlInput.focus();
+        }
+      } catch {
+        // Permission denied or not available — silently ignore
+      }
+    });
+
+    // ── Generate ──────────────────────────────────────────────────────────────
+
+    function generateQR() {
+      const url = urlInput.value.trim();
+      if (!url) return;
+      currentUrl = url;
+
+      // Screen transition
+      screenInput.classList.add('is-exiting');
+      screenResult.hidden = false;
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          screenResult.classList.add('is-visible');
+        });
+      });
+
+      // Render QR after brief delay to let transition begin
+      qrContainer.classList.remove('is-ready');
+      qrContainer.classList.add('is-rendering');
+
+      setTimeout(() => {
+        const opts = { ...buildQROpts(currentStyleId), data: currentUrl };
+        qrContainer.innerHTML = '';
+        qrCode = new QRCodeStyling(opts);
+        qrCode.append(qrContainer);
+
+        requestAnimationFrame(() => {
+          qrContainer.classList.remove('is-rendering');
+          qrContainer.classList.add('is-ready');
+        });
+      }, 80);
+    }
+
+    btnGenerate.addEventListener('click', generateQR);
+
+    // ── Style switch ──────────────────────────────────────────────────────────
+
+    function switchStyle(styleId) {
+      if (styleId === currentStyleId) return;
+      currentStyleId = styleId;
+
+      document.querySelectorAll('.style-btn').forEach(btn => {
+        btn.classList.toggle('is-active', btn.dataset.styleId === styleId);
+      });
+
+      if (!qrCode || !currentUrl) return;
+
+      qrContainer.classList.remove('is-ready');
+      qrContainer.classList.add('is-rendering');
+
+      qrCode.update({ ...buildQROpts(styleId), data: currentUrl });
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          qrContainer.classList.remove('is-rendering');
+          qrContainer.classList.add('is-ready');
+        });
+      });
+    }
+
+    // ── Download ──────────────────────────────────────────────────────────────
+
+    btnDownload.addEventListener('click', async () => {
+      if (!currentUrl) return;
+
+      const hiRes = new QRCodeStyling({
+        ...buildQROpts(currentStyleId, true),  // transparent background
+        width: 1024,
+        height: 1024,
+        margin: 48,
+        data: currentUrl,
+      });
+
+      try {
+        await hiRes.download({ name: 'cute-qr', extension: 'png' });
+      } catch (err) {
+        console.error('Download failed:', err);
+      }
+    });
+
+    // ── Reset ─────────────────────────────────────────────────────────────────
+
+    btnReset.addEventListener('click', () => {
+      screenResult.classList.remove('is-visible');
+
+      screenResult.addEventListener('transitionend', () => {
+        screenResult.hidden = true;
+        screenInput.classList.remove('is-exiting');
+        urlInput.value = '';
+        urlInput.dispatchEvent(new Event('input'));
+        qrContainer.innerHTML = '';
+        qrContainer.classList.remove('is-ready');
+        qrContainer.classList.add('is-rendering');
+        qrCode = null;
+        currentUrl = '';
+        setTimeout(() => urlInput.focus(), 50);
+      }, { once: true });
+    });
+  </script>
+</body>
+</html>
