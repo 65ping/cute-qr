@@ -5,11 +5,11 @@ Open `index.html`. Paste a link. Done.
 
 ## Features
 
-- **4 QR styles** — Classic, Rounded, Dots, Classy
-- **Dark & light mode** — follows your system, switchable with one tap
-- **Transparent PNG download** — 1024×1024, no background, drops onto anything
-- **Paste from clipboard** — one-tap paste button
-- **Zero setup** — single HTML file, no server, no login, no install
+- **4 QR styles:** Classic, Rounded, Dots, Classy
+- **Dark & light mode:** follows your system, switchable with one tap
+- **Transparent PNG download:** 1024x1024, no background, drops onto anything
+- **Paste from clipboard:** one-tap paste button
+- **Zero setup:** single HTML file, no server, no login, no install
 
 ## How to use
 
@@ -27,7 +27,7 @@ open cute-qr/index.html
 
 ## Stack
 
-- Vanilla HTML / CSS / JS — no framework, no build step
+- Vanilla HTML / CSS / JS, no framework, no build step
 - [`qr-code-styling`](https://github.com/kozakdenys/qr-code-styling) for QR rendering and export
 - iOS 26-inspired liquid glass UI with `backdrop-filter`
 
