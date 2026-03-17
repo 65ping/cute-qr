@@ -540,7 +540,7 @@
 
           <div class="input-wrap">
             <input
-              type="url"
+              type="text"
               id="url-input"
               class="url-input"
               placeholder="Paste a link…"
@@ -754,6 +754,7 @@
       btn.className = 'style-btn' + (style.id === currentStyleId ? ' is-active' : '');
       btn.dataset.styleId = style.id;
       btn.setAttribute('aria-label', style.label + ' style');
+      btn.setAttribute('aria-pressed', style.id === currentStyleId ? 'true' : 'false');
       btn.innerHTML = style.icon + `<span>${style.label}</span>`;
       btn.addEventListener('click', () => switchStyle(style.id));
       stylePicker.appendChild(btn);
@@ -795,15 +796,11 @@
       if (!url) return;
       currentUrl = url;
 
-      // Screen transition
+      // Screen transition — force layout flush before animating (Safari fix)
       screenInput.classList.add('is-exiting');
       screenResult.hidden = false;
-
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          screenResult.classList.add('is-visible');
-        });
-      });
+      screenResult.getBoundingClientRect(); // flush layout so initial state is painted
+      screenResult.classList.add('is-visible');
 
       // Render QR after brief delay to let transition begin
       qrContainer.classList.remove('is-ready');
@@ -826,12 +823,17 @@
 
     // ── Style switch ──────────────────────────────────────────────────────────
 
+    let styleSwitchTimer = null;
+
     function switchStyle(styleId) {
       if (styleId === currentStyleId) return;
       currentStyleId = styleId;
 
+      // Update active button + aria-pressed
       document.querySelectorAll('.style-btn').forEach(btn => {
-        btn.classList.toggle('is-active', btn.dataset.styleId === styleId);
+        const active = btn.dataset.styleId === styleId;
+        btn.classList.toggle('is-active', active);
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
       });
 
       if (!qrCode || !currentUrl) return;
@@ -839,14 +841,15 @@
       qrContainer.classList.remove('is-ready');
       qrContainer.classList.add('is-rendering');
 
-      qrCode.update({ ...buildQROpts(styleId), data: currentUrl });
-
-      requestAnimationFrame(() => {
+      // Debounce rapid clicks — only render after 120ms of inactivity
+      clearTimeout(styleSwitchTimer);
+      styleSwitchTimer = setTimeout(() => {
+        qrCode.update({ ...buildQROpts(currentStyleId), data: currentUrl });
         requestAnimationFrame(() => {
           qrContainer.classList.remove('is-rendering');
           qrContainer.classList.add('is-ready');
         });
-      });
+      }, 120);
     }
 
     // ── Download ──────────────────────────────────────────────────────────────
@@ -871,10 +874,16 @@
 
     // ── Reset ─────────────────────────────────────────────────────────────────
 
+    let resetHandler = null;
+
     btnReset.addEventListener('click', () => {
       screenResult.classList.remove('is-visible');
 
-      screenResult.addEventListener('transitionend', () => {
+      // Remove any pending handler before adding a new one (prevents accumulation)
+      if (resetHandler) screenResult.removeEventListener('transitionend', resetHandler);
+
+      resetHandler = () => {
+        resetHandler = null;
         screenResult.hidden = true;
         screenInput.classList.remove('is-exiting');
         urlInput.value = '';
@@ -885,7 +894,9 @@
         qrCode = null;
         currentUrl = '';
         setTimeout(() => urlInput.focus(), 50);
-      }, { once: true });
+      };
+
+      screenResult.addEventListener('transitionend', resetHandler, { once: true });
     });
   </script>
 </body>
