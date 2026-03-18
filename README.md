@@ -3,6 +3,8 @@
 A minimal, zero-install QR code generator with an iOS liquid glass aesthetic.
 Open `index.html`. Paste a link. Done.
 
+**[Try it live →](https://65ping.github.io/cute-qr/)**
+
 ## Features
 
 - **4 QR styles:** Classic, Rounded, Dots, Classy
